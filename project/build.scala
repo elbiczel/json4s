@@ -33,13 +33,13 @@ object build extends Build {
   }
 
   val mavenCentralFrouFrou = Seq(
-    homepage := Some(new URL("https://github.com/json4s/json4s")),
+    homepage := Some(new URL("https://github.com/elbiczel/json4s")),
     startYear := Some(2009),
-    licenses := Seq(("ASL", new URL("http://github.com/json4s/json4s/raw/HEAD/LICENSE"))),
+    licenses := Seq(("ASL", new URL("http://github.com/elbiczel/json4s/raw/HEAD/LICENSE"))),
     pomExtra <<= (pomExtra, name, description) {(pom, name, desc) => pom ++ Group(
       <scm>
-        <url>http://github.com/json4s/json4s</url>
-        <connection>scm:git:git://github.com/json4s/json4s.git</connection>
+        <url>http://github.com/elbiczel/json4s</url>
+        <connection>scm:git:git://github.com/elbiczel/json4s.git</connection>
       </scm>
       <developers>
         <developer>
@@ -52,12 +52,12 @@ object build extends Build {
   )
 
   val json4sSettings = Defaults.defaultSettings ++ mavenCentralFrouFrou ++ Seq(
-    organization := "org.json4s",
+    organization := "com.biczel",
     scalaVersion := "2.10.0",
     crossScalaVersions := Seq("2.10.0", "2.11.0"),
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-optimize", "-feature", "-Yinline-warnings", "-language:existentials", "-language:implicitConversions", "-language:higherKinds", "-language:reflectiveCalls", "-language:postfixOps"),
     version := "3.2.11-SNAPSHOT",
-    javacOptions ++= Seq("-target", "1.6", "-source", "1.6"),
+    javacOptions ++= Seq("-target", "1.7", "-source", "1.7"),
     manifestSetting,
     publishSetting,
     resolvers ++= Seq(Opts.resolver.sonatypeSnapshots, Opts.resolver.sonatypeReleases),
