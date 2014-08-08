@@ -49,6 +49,42 @@ object FieldSerializerBugs extends Specification {
     Extraction.decompose(Type2(456)) must_== (expected2)
   }
 
+  "FieldSerializer's must work correctly for registered superinterface" in {
+    // generic field serializer
+    val genericFieldSerializer = FieldSerializer[SuperTrait](FieldSerializer.ignore("ignoredField"))
+    // specific field serializer
+    val specificFieldSerializer = FieldSerializer[MainTrait](
+      FieldSerializer.ignore("ignoredField") orElse FieldSerializer.renameTo("importantField", "important"))
+    implicit val formats = DefaultFormats + specificFieldSerializer + genericFieldSerializer
+    val expected1 = JObject(JField("important", JString("importantValue")))
+    val mainObj = new MainClass("ignoredValue", "importantValue")
+    val decomposed = Extraction.decompose(mainObj)
+    decomposed must_== (expected1)
+  }
+
+  "FieldSerializer's must take the best serializer" in {
+    // trait serializer
+    val specificFieldSerializer = FieldSerializer[MainTrait](
+      FieldSerializer.ignore("ignoredField") orElse FieldSerializer.renameTo("importantField", "important"))
+    // class serializer
+    val classFieldSerializer = FieldSerializer[MainClass](
+      FieldSerializer.ignore("ignoredField") orElse FieldSerializer.renameTo("importantField", "importantClassField"))
+    implicit val formats = DefaultFormats + classFieldSerializer + specificFieldSerializer
+    val expected1 = JObject(JField("importantClassField", JString("importantValue")))
+    val mainObj = new MainClass("ignoredValue", "importantValue")
+    val decomposed = Extraction.decompose(mainObj)
+    decomposed must_== (expected1)
+  }
+
+  trait SuperTrait
+
+  trait MainTrait extends SuperTrait {
+    val ignoredField: String
+    val importantField: String
+  }
+
+  class MainClass(override val ignoredField: String, override val importantField: String) extends MainTrait
+
   case class WithSymbol(`a-b*c`: Int)
 
   class ClassWithOption {

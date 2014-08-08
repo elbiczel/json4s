@@ -160,7 +160,8 @@ trait Formats { self: Formats =>
     import ClassDelta._
 
     val ord = Ordering[Int].on[(Class[_], FieldSerializer[_])](x => delta(x._1, clazz))
-    fieldSerializers filter (_._1.isAssignableFrom(clazz)) match {
+    val assignableFieldSerializers = fieldSerializers filter (_._1.isAssignableFrom(clazz))
+    assignableFieldSerializers match {
       case Nil => None
       case xs  => Some((xs min ord)._2)
     }
@@ -262,15 +263,20 @@ trait Formats { self: Formats =>
   private[json4s] object ClassDelta {
     def delta(class1: Class[_], class2: Class[_]): Int = {
       if (class1 == class2) 0
-      else if (class1.getInterfaces.contains(class2)) 0
-      else if (class2.getInterfaces.contains(class1)) 0
       else if (class1.isAssignableFrom(class2)) {
-        1 + delta(class1, class2.getSuperclass)
+        1 + delta(class1, assignableSuper(class2, class1))
       }
       else if (class2.isAssignableFrom(class1)) {
-        1 + delta(class1.getSuperclass, class2)
+        1 + delta(assignableSuper(class1, class2), class2)
       }
       else sys.error("Don't call delta unless one class is assignable from the other")
+    }
+
+    private def assignableSuper(sub: Class[_], sup: Class[_]): Class[_] = {
+      if (sub.getSuperclass != null && sup.isAssignableFrom(sub.getSuperclass)) sub.getSuperclass
+      else {
+        sub.getInterfaces.filter((iface) => sup.isAssignableFrom(iface)).head
+      }
     }
   }
 
